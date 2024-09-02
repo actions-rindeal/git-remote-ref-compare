@@ -50,7 +50,7 @@ jobs:
         uses: 'actions/checkout@main'
 
       - name: >
-          Test ${{ fromJSON(matrix['json'])["testName"] }}
+          Test ${{ fromJSON(matrix['json'])['testName'] }}
         id: 'test'
         uses: './'
         with:
