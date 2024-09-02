@@ -37,6 +37,16 @@ jobs:
               "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
               "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
             }
+          - |
+            {
+              "testName": "Test Source Repo Equals Mirror Repo",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": "https://git.launchpad.net/beautifulsoup",
+              "targetRepoUrl": "https://github.com/facsimiles/beautifulsoup.git"
+            }
+
+    name: >
+      Test ${{ fromJSON(matrix['json'])['testName'] }}
 
     steps:
       - name: "Dump Matrix JSON"
