@@ -43,8 +43,9 @@ jobs:
             const steps = JSON.parse(process.env['OUTPUTS'])
             const prevStepOutputs = steps[Object.keys(steps).pop()]
 
+            console.log({refsDiffer: prevStepOutputs['refs-differ']})
             const refsDiffer = JSON.parse(prevStepOutputs['refs-differ'])
-            console.log(refsDiffer)
+            console.log({refsDiffer})
         env:
           'OUTPUTS': ${{ toJSON(steps.*.outputs) }}
 
