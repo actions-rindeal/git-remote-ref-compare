@@ -51,6 +51,10 @@ jobs:
             const refsDiffer = JSON.parse(prevStepOutputs['refs-differ'])
             assert.strictEqual(typeof refsDiffer, 'boolean')
             assert.strictEqual(refsDiffer, false)
+
+            const githubRepositoryHttpsUrl = "${{ format('https://github.com/{0}', github.repository) }}"
+            assert.strictEqual(prevStepOutputs['source-repo-url'], githubRepositoryHttpsUrl)
+            assert.strictEqual(prevStepOutputs['target-repo-url'], githubRepositoryHttpsUrl)
             
             core.summary.write()
         env:
