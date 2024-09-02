@@ -39,10 +39,17 @@ jobs:
             }
           - |
             {
-              "testName": "Test Source Repo Equals Mirror Repo",
+              "testName": "Test Equality",
               "expectedRefsDiffer": false,
               "sourceRepoUrl": "https://git.launchpad.net/beautifulsoup",
               "targetRepoUrl": "https://github.com/facsimiles/beautifulsoup.git"
+            }
+          - |
+            {
+              "testName": "Test Completely Different Repos",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": "https://github.com/rindeal-js/git-remote-ref-compare.git"
             }
 
     name: >
@@ -94,32 +101,6 @@ jobs:
         env:
           'STEPS': ${{ toJSON(steps) }}
           'MATRIX_JSON': ${{ matrix['json'] }}
-
-      # - name: "Test Source Repo Equals Mirror Repo"
-      #   id: 'test-source-equals-mirror'
-      #   uses: './'
-      #   with:
-      #     'source-repo-url': 'https://git.launchpad.net/beautifulsoup'
-      #     'target-repo-url': 'https://github.com/facsimiles/beautifulsoup.git'
-
-      # - name: "Assert Source Repo Equals Mirror Repo"
-      #   uses: 'actions/github-script@main'
-      #   with:
-      #     script: |
-      #       const assert = require('node:assert/strict')
-
-      #       const steps = JSON.parse(process.env['STEPS'])
-      #       const prevStepOutputs = steps[Object.keys(steps).pop()].outputs
-
-      #       core.summary.addHeading(Object.keys(steps).pop(), 2)
-      #       core.summary.addCodeBlock(JSON.stringify(prevStepOutputs, null, "  "), 'json')
-
-      #       const refsDiffer = JSON.parse(prevStepOutputs['refs-differ'])
-      #       assert.strictEqual(refsDiffer, false)
-            
-      #       core.summary.write()
-      #   env:
-      #     'STEPS': ${{ toJSON(steps) }}
 
 
       # - name: Run local action with different URLs that should differ
