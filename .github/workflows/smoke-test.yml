@@ -57,6 +57,7 @@ jobs:
             const steps = JSON.parse(process.env['STEPS'])
             const prevStepOutputs = steps[Object.keys(steps).pop()].outputs
 
+            core.summary.addHeading(Object.keys(steps).pop(), 2)
             core.summary.addCodeBlock(JSON.stringify({prevStepOutputs}, null, "  "), 'json')
             
             console.log({refsDiffer: prevStepOutputs['refs-differ']})
