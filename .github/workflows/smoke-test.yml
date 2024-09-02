@@ -87,9 +87,10 @@ jobs:
           script: |
             const assert = require('node:assert/strict')
 
-            const outputs = JSON.parse(process.env['OUTPUTS'])
-            const prevStepOutputs = outputs[Object.keys(outputs).pop()]
+            const steps = JSON.parse(process.env['STEPS'])
+            const prevStepOutputs = steps[Object.keys(steps).pop()].outputs
 
+            core.summary.addHeading(Object.keys(steps).pop(), 2)
             core.summary.addCodeBlock(JSON.stringify({prevStepOutputs}, null, "  "), 'json')
 
             const refsDiffer = JSON.parse(prevStepOutputs['refs-differ'])
@@ -97,7 +98,7 @@ jobs:
             
             core.summary.write()
         env:
-          'OUTPUTS': ${{ toJSON(steps.*.outputs) }}
+          'STEPS': ${{ toJSON(steps) }}
 
 
       # - name: Run local action with different URLs that should differ
