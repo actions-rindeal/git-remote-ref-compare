@@ -1,0 +1,66 @@
+name: "Smoke Test"
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  'smoke-test':
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - name: "Checkout current repository"
+        uses: 'actions/checkout@main'
+
+# outputs:
+#   'refs-differ':
+#     description: "Boolean indicating if the repositories are different"
+#   'diff-message':
+#     description: "Optional message describing the differences"
+#   'diff-type':
+#     description: "Optional type of the difference"
+#   'source-repo-url':
+#     description: "URL of the source Git repository"
+#   'target-repo-url':
+#     description: "URL of the target Git repository"
+
+      - name: "Run local action with current repo vs current repo"
+        id: 'test-current-repo'
+        uses: './'
+        with:
+          source-repo-url: ${{ github.repositoryUrl }}
+          target-repo-url: ${{ github.repositoryUrl }}
+
+      - name: "Assert"
+        uses: 'actions/github-script@main'
+        with:
+          script: |
+            const steps = JSON.parse(process.env['OUTPUTS'])
+            const prevStepOutputs = steps[Object.keys(steps).pop()]
+
+            const refsDiffer = JSON.parse(prevStepOutputs['refs-differ'])
+            console.log(refsDiffer)
+        env:
+          'OUTPUTS': ${{ toJSON(steps.*.outputs) }}
+
+      # - name: Run local action with different URLs that should be equal
+      #   id: test_equal_repos
+      #   uses: ./
+      #   with:
+      #     source-repo-url: 'https://git.launchpad.net/beautifulsoup'
+      #     target-repo-url: 'https://github.com/facsimiles/beautifulsoup.git'
+
+      # - name: Run local action with different URLs that should differ
+      #   id: test_different_repos
+      #   uses: ./
+      #   with:
+      #     source-repo-url: ${{ github.repository }}
+      #     target-repo-url: 'https://github.com/rindeal-js/git-remote-ref-compare.git'
+
+      # - name: Output results
+      #   run: |
+      #     echo "Current repo vs current repo: ${{ steps.test_current_repo.outputs.refs-differ }}"
+      #     echo "Equal repos: ${{ steps.test_equal_repos.outputs.refs-differ }}"
+      #     echo "Different repos: ${{ steps.test_different_repos.outputs.refs-differ }}"
+      #   env:
+      #     INPUT_REFS_DIFFER_OUTPUTS: ${{ toJSON(steps.test_current_repo.outputs) }}
