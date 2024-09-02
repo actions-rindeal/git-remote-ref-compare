@@ -34,8 +34,8 @@ jobs:
             {
               "testName": "Test source(github.repository), target(github.repository)",
               "expectedRefsDiffer": false,
-              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{}', github.repository)) }},
-              "targetRepoUrl": ${{ toJSON(format('https://github.com/{}', github.repository)) }}
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}', github.repository)) }}
             }
 
     steps:
