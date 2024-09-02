@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/workflows/smoke-test.yml"
   pull_request:
+  workflow_dispatch:
 
 jobs:
   'smoke-test':
@@ -32,8 +33,8 @@ jobs:
         id: 'test-current-repo'
         uses: './'
         with:
-          source-repo-url: ${{ github.repositoryUrl }}
-          target-repo-url: ${{ github.repositoryUrl }}
+          source-repo-url: "${{ format('https://github.com/{0}', github.repository) }}"
+          target-repo-url: "${{ format('https://github.com/{0}', github.repository) }}"
 
       - name: "Assert"
         uses: 'actions/github-script@main'

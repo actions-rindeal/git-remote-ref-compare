@@ -19143,9 +19143,10 @@ var require_dist = __commonJS({
 // src/index.ts
 var core = __toESM(require_core());
 var import_git_remote_ref_compare = __toESM(require_dist());
-function isValidUrl(url) {
+function isValidUrl(urlStr) {
   try {
-    new URL(url);
+    const url = new URL(urlStr);
+    if (url.protocol !== "https:") return false;
   } catch (err) {
     return false;
   }

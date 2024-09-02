@@ -2,9 +2,10 @@ import * as core from '@actions/core'
 import { GitRepo } from '@rindeal/git-remote-ref-compare'
 
 
-function isValidUrl(url: string | URL) {
+function isValidUrl(urlStr: string | URL) {
     try {
-        new URL(url)
+        const url = new URL(urlStr)
+        if ( url.protocol !== 'https:' ) return false
     } catch (err) {
         return false
     }
