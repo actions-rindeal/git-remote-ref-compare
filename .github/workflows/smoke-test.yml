@@ -40,7 +40,7 @@ jobs:
         uses: 'actions/github-script@main'
         with:
           script: |
-            const assert = require('node:assert')
+            const assert = require('node:assert/strict')
 
             const steps = JSON.parse(process.env['OUTPUTS'])
             const prevStepOutputs = steps[Object.keys(steps).pop()]
@@ -49,7 +49,8 @@ jobs:
             
             console.log({refsDiffer: prevStepOutputs['refs-differ']})
             const refsDiffer = JSON.parse(prevStepOutputs['refs-differ'])
-            assert(typeof refsDiffer === 'boolean')
+            assert.strictEqual(typeof refsDiffer, 'boolean')
+            assert.strictEqual(refsDiffer, false)
             
             core.summary.write()
         env:
