@@ -58,7 +58,7 @@ jobs:
           'target-repo-url': ${{ fromJSON(matrix['json'])["targetRepoUrl"] }}
 
       - name: >
-          Assert ${{ fromJSON(matrix['json'])["testName"] }}
+          Assert ${{ fromJSON(matrix['json'])['testName'] }}
         uses: 'actions/github-script@main'
         with:
           script: |
