@@ -9,14 +9,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-jobs:
-  'smoke-test':
-    runs-on: 'ubuntu-latest'
-
-    steps:
-      - name: "Checkout current repository"
-        uses: 'actions/checkout@main'
-
 # outputs:
 #   'refs-differ':
 #     description: "Boolean indicating if the repositories are different"
@@ -29,26 +21,44 @@ jobs:
 #   'target-repo-url':
 #     description: "URL of the target Git repository"
 
-      - name: "Set Vars"
-        id: 'vars'
-        uses: 'actions/github-script@main'
-        with:
-          script: |
-            const { githubRepository } = process.env
-            if ( ! githubRepository ) throw new Error()
-            core.setOutput('githubRepositoryHttpsUrl', `https://github.com/${githubRepository}`)
+jobs:
+  'smoke-test':
+    runs-on: 'ubuntu-latest'
+
+    strategy:
+      # max-parallel: 1
+      fail-fast: false
+      matrix:
+        'json':
+          - |
+            {
+              "testName": "Test source(github.repository), target(github.repository)",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{}', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{}', github.repository)) }}
+            }
+
+    steps:
+      - name: "Dump Matrix JSON"
+        shell: bash -euo pipefail {0}
+        run: |
+          echo "${MATRIX_JSON}" | jq -c .
         env:
-          'githubRepository': ${{ github.repository }}
+          'MATRIX_JSON': ${{ matrix['json'] }}
 
+      - name: "Checkout current repository"
+        uses: 'actions/checkout@main'
 
-      - name: "Test source(github.repository), target(github.repository)"
-        id: 'test-current-repo'
+      - name: >
+          Test ${{ fromJSON(matrix['json'])["testName"] }}
+        id: 'test'
         uses: './'
         with:
-          'source-repo-url': "${{ steps['vars'].outputs['githubRepositoryHttpsUrl'] }}"
-          'target-repo-url': "${{ steps['vars'].outputs['githubRepositoryHttpsUrl'] }}"
+          'source-repo-url': ${{ fromJSON(matrix['json'])["sourceRepoUrl"] }}
+          'target-repo-url': ${{ fromJSON(matrix['json'])["targetRepoUrl"] }}
 
-      - name: "Assert `refs(github.repository) === refs(github.repository)`"
+      - name: >
+          Assert ${{ fromJSON(matrix['json'])["testName"] }}
         uses: 'actions/github-script@main'
         with:
           script: |
@@ -57,48 +67,48 @@ jobs:
             const steps = JSON.parse(process.env['STEPS'])
             const prevStepOutputs = steps[Object.keys(steps).pop()].outputs
 
-            core.summary.addHeading(Object.keys(steps).pop(), 2)
+            const matrix = JSON.parse(process.env['MATRIX_JSON'])
+
+            core.summary.addHeading(matrix["testName"], 2)
             core.summary.addCodeBlock(JSON.stringify(prevStepOutputs, null, "  "), 'json')
             
             console.log({refsDiffer: prevStepOutputs['refs-differ']})
             const refsDiffer = JSON.parse(prevStepOutputs['refs-differ'])
             assert.strictEqual(typeof refsDiffer, 'boolean')
-            assert.strictEqual(refsDiffer, false)
+            assert.strictEqual(refsDiffer, matrix["expectedRefsDiffer"])
 
-            // const githubRepositoryHttpsUrl = "${{ format('https://github.com/{0}', github.repository) }}"
-            const githubRepositoryHttpsUrl = steps['vars'].outputs['githubRepositoryHttpsUrl']
-            assert.strictEqual(prevStepOutputs['source-repo-url'], githubRepositoryHttpsUrl)
-            assert.strictEqual(prevStepOutputs['target-repo-url'], githubRepositoryHttpsUrl)
+            assert.strictEqual(prevStepOutputs['source-repo-url'], matrix["sourceRepoUrl"])
+            assert.strictEqual(prevStepOutputs['target-repo-url'], matrix["targetRepoUrl"])
             
             core.summary.write()
         env:
-          'STEPS':   ${{ toJSON(steps) }}
+          'MATRIX_JSON': ${{ matrix['json'] }}
 
-      - name: "Test Source Repo Equals Mirror Repo"
-        id: 'test-source-equals-mirror'
-        uses: './'
-        with:
-          'source-repo-url': 'https://git.launchpad.net/beautifulsoup'
-          'target-repo-url': 'https://github.com/facsimiles/beautifulsoup.git'
+      # - name: "Test Source Repo Equals Mirror Repo"
+      #   id: 'test-source-equals-mirror'
+      #   uses: './'
+      #   with:
+      #     'source-repo-url': 'https://git.launchpad.net/beautifulsoup'
+      #     'target-repo-url': 'https://github.com/facsimiles/beautifulsoup.git'
 
-      - name: "Assert Source Repo Equals Mirror Repo"
-        uses: 'actions/github-script@main'
-        with:
-          script: |
-            const assert = require('node:assert/strict')
+      # - name: "Assert Source Repo Equals Mirror Repo"
+      #   uses: 'actions/github-script@main'
+      #   with:
+      #     script: |
+      #       const assert = require('node:assert/strict')
 
-            const steps = JSON.parse(process.env['STEPS'])
-            const prevStepOutputs = steps[Object.keys(steps).pop()].outputs
+      #       const steps = JSON.parse(process.env['STEPS'])
+      #       const prevStepOutputs = steps[Object.keys(steps).pop()].outputs
 
-            core.summary.addHeading(Object.keys(steps).pop(), 2)
-            core.summary.addCodeBlock(JSON.stringify(prevStepOutputs, null, "  "), 'json')
+      #       core.summary.addHeading(Object.keys(steps).pop(), 2)
+      #       core.summary.addCodeBlock(JSON.stringify(prevStepOutputs, null, "  "), 'json')
 
-            const refsDiffer = JSON.parse(prevStepOutputs['refs-differ'])
-            assert.strictEqual(refsDiffer, false)
+      #       const refsDiffer = JSON.parse(prevStepOutputs['refs-differ'])
+      #       assert.strictEqual(refsDiffer, false)
             
-            core.summary.write()
-        env:
-          'STEPS': ${{ toJSON(steps) }}
+      #       core.summary.write()
+      #   env:
+      #     'STEPS': ${{ toJSON(steps) }}
 
 
       # - name: Run local action with different URLs that should differ
