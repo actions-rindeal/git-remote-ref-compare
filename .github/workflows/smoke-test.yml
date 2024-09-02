@@ -87,7 +87,7 @@ jobs:
             const assert = require('node:assert/strict')
 
             const outputs = JSON.parse(process.env['OUTPUTS'])
-            const prevStepOutputs = steps[Object.keys(outputs).pop()]
+            const prevStepOutputs = outputs[Object.keys(outputs).pop()]
 
             core.summary.addCodeBlock(JSON.stringify({prevStepOutputs}, null, "  "), 'json')
 
