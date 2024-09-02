@@ -29,12 +29,24 @@ jobs:
 #   'target-repo-url':
 #     description: "URL of the target Git repository"
 
+      - name: "Set Vars"
+        id: 'vars'
+        uses: 'actions/github-script@main'
+        with:
+          script: |
+            const { githubRepository } = process.env
+            if ( ! githubRepository ) throw new Error()
+            core.setOutput('githubRepositoryHttpsUrl', `https://github.com/${githubRepository}`)
+        env:
+          'githubRepository': ${{ github.repository }}
+
+
       - name: "Run local action with current repo vs current repo"
         id: 'test-current-repo'
         uses: './'
         with:
-          source-repo-url: "${{ format('https://github.com/{0}', github.repository) }}"
-          target-repo-url: "${{ format('https://github.com/{0}', github.repository) }}"
+          'source-repo-url': "${{ steps['vars'].outputs['githubRepositoryHttpsUrl'] }}"
+          'target-repo-url': "${{ steps['vars'].outputs['githubRepositoryHttpsUrl'] }}"
 
       - name: "Assert `refs(github.repository) === refs(github.repository)`"
         uses: 'actions/github-script@main'
@@ -52,7 +64,8 @@ jobs:
             assert.strictEqual(typeof refsDiffer, 'boolean')
             assert.strictEqual(refsDiffer, false)
 
-            const githubRepositoryHttpsUrl = "${{ format('https://github.com/{0}', github.repository) }}"
+            // const githubRepositoryHttpsUrl = "${{ format('https://github.com/{0}', github.repository) }}"
+            const githubRepositoryHttpsUrl = steps['vars'].outputs['githubRepositoryHttpsUrl']
             assert.strictEqual(prevStepOutputs['source-repo-url'], githubRepositoryHttpsUrl)
             assert.strictEqual(prevStepOutputs['target-repo-url'], githubRepositoryHttpsUrl)
             
