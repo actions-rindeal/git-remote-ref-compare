@@ -7,65 +7,253 @@ on:
     paths:
       - ".github/workflows/smoke-test.yml"
   pull_request:
+  schedule:
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 jobs:
   'smoke-test':
     runs-on: 'ubuntu-latest'
 
+    strategy:
+      fail-fast: false
+      matrix:
+        'json':
+          - |
+            {
+              "testName": "#1 - Both URLs Empty",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": "",
+              "targetRepoUrl": ""
+            }
+          - |
+            {
+              "testName": "#2 - Empty Source URL",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": "",
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#3 - Empty Target URL",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ""
+            }
+          - |
+            {
+              "testName": "#4 - Same URLs",
+              "expectedOutcome": "success",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#5 - Source URL with trailing slash",
+              "expectedOutcome": "success",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git/', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#6 - Target URL with trailing slash",
+              "expectedOutcome": "success",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git/', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#7 - Source URL with no .git suffix",
+              "expectedOutcome": "success",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#8 - Target URL with no .git suffix",
+              "expectedOutcome": "success",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#9 - Source URL with git protocol",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": ${{ toJSON(format('git://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#10 - Target URL with git protocol",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('git://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#11 - Source URL with ssh protocol",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": ${{ toJSON(format('ssh://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#12 - Target URL with ssh protocol",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('ssh://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#13 - Invalid Source URL",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": "https://invalid-url",
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#14 - Invalid Target URL",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": "https://invalid-url"
+            }
+          - |
+            {
+              "testName": "#15 - Non-existant Source URL",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": "https://invalid-source-url",
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#16 - Non-existant Target URL",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": "https://invalid-source-url"
+            }
+          - |
+            {
+              "testName": "#17 - Source URL with different case",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.GIT', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#18 - Target URL with different case",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.GIT', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#19 - Completely Different Repos",
+              "expectedOutcome": "success",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": "https://github.com/rindeal-js/git-remote-ref-compare.git"
+            }
+          - |
+            {
+              "testName": "#20 - Mirrored Repos",
+              "expectedOutcome": "success",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": "https://git.launchpad.net/beautifulsoup",
+              "targetRepoUrl": "https://github.com/facsimiles/beautifulsoup.git"
+            }
+
+    name: >
+      Test ${{ fromJSON(matrix['json'])['testName'] }}
+
     steps:
-      - name: "Checkout current repository"
-        uses: 'actions/checkout@main'
-
-# outputs:
-#   'refs-differ':
-#     description: "Boolean indicating if the repositories are different"
-#   'diff-message':
-#     description: "Optional message describing the differences"
-#   'diff-type':
-#     description: "Optional type of the difference"
-#   'source-repo-url':
-#     description: "URL of the source Git repository"
-#   'target-repo-url':
-#     description: "URL of the target Git repository"
-
-      - name: "Run local action with current repo vs current repo"
-        id: 'test-current-repo'
-        uses: './'
-        with:
-          source-repo-url: "${{ format('https://github.com/{0}', github.repository) }}"
-          target-repo-url: "${{ format('https://github.com/{0}', github.repository) }}"
-
-      - name: "Assert"
+      - name: "Initialize Summary"
         uses: 'actions/github-script@main'
         with:
           script: |
-            const steps = JSON.parse(process.env['OUTPUTS'])
-            const prevStepOutputs = steps[Object.keys(steps).pop()]
+            const { matrixJson } = process.env
+            const matrix = JSON.parse(matrixJson)
 
-            const refsDiffer = JSON.parse(prevStepOutputs['refs-differ'])
-            console.log(refsDiffer)
+            core.summary.addHeading(`${matrix["testName"]}`, 1)
+            core.summary.write()
         env:
-          'OUTPUTS': ${{ toJSON(steps.*.outputs) }}
+          'matrixJson': ${{ matrix.json }}
 
-      # - name: Run local action with different URLs that should be equal
-      #   id: test_equal_repos
-      #   uses: ./
-      #   with:
-      #     source-repo-url: 'https://git.launchpad.net/beautifulsoup'
-      #     target-repo-url: 'https://github.com/facsimiles/beautifulsoup.git'
+      - name: "Dump Matrix JSON"
+        uses: 'actions/github-script@main'
+        with:
+          script: |
+            const { execFileSync } = require('child_process')
+            const { matrixJson } = process.env
+            const matrix = JSON.parse(matrixJson)
 
-      # - name: Run local action with different URLs that should differ
-      #   id: test_different_repos
-      #   uses: ./
-      #   with:
-      #     source-repo-url: ${{ github.repository }}
-      #     target-repo-url: 'https://github.com/rindeal-js/git-remote-ref-compare.git'
+            execFileSync('jq', ['-C', '.'], {
+              input: matrixJson,
+              stdio: ['pipe', 'inherit', 'inherit'],
+            })
 
-      # - name: Output results
-      #   run: |
-      #     echo "Current repo vs current repo: ${{ steps.test_current_repo.outputs.refs-differ }}"
-      #     echo "Equal repos: ${{ steps.test_equal_repos.outputs.refs-differ }}"
-      #     echo "Different repos: ${{ steps.test_different_repos.outputs.refs-differ }}"
-      #   env:
-      #     INPUT_REFS_DIFFER_OUTPUTS: ${{ toJSON(steps.test_current_repo.outputs) }}
+            core.summary.addHeading("Matrix", 2)
+            core.summary.addCodeBlock(JSON.stringify(matrix, null, "  "), 'json')
+            core.summary.write()
+        env:
+          'matrixJson': ${{ matrix.json }}
+
+      - name: "Checkout current repository"
+        uses: 'actions/checkout@main'
+
+      - name: >
+          Test ${{ fromJSON(matrix['json'])['testName'] }}
+        id: 'test'
+        continue-on-error: true
+        uses: './'
+        with:
+          'source-repo-url': ${{ fromJSON(matrix['json'])['sourceRepoUrl'] }}
+          'target-repo-url': ${{ fromJSON(matrix['json'])['targetRepoUrl'] }}
+
+      - name: >
+          Assert ${{ fromJSON(matrix['json'])['testName'] }}
+        uses: 'actions/github-script@main'
+        with:
+          script: |
+            const assert = require('node:assert/strict')
+            const steps = JSON.parse(process.env['STEPS'])
+            const prevStep = steps[Object.keys(steps).pop()]
+            console.log({prevStep})
+            const matrix = JSON.parse(process.env['MATRIX_JSON'])
+            assert.strictEqual(prevStep.outcome, matrix["expectedOutcome"])
+            if ( matrix["expectedOutcome"] === 'success' ) {
+              const outputs = prevStep.outputs
+              core.summary.addHeading("Outputs", 2)
+              core.summary.addCodeBlock(JSON.stringify(outputs, null, "  "), 'json')
+              console.log({refsDiffer: outputs['refs-differ']})
+              const refsDiffer = JSON.parse(outputs['refs-differ'])
+              assert.strictEqual(typeof refsDiffer, 'boolean')
+              assert.strictEqual(refsDiffer, matrix["expectedRefsDiffer"])
+              assert.strictEqual(outputs['source-repo-url'], matrix["sourceRepoUrl"])
+              assert.strictEqual(outputs['target-repo-url'], matrix["targetRepoUrl"])
+            } else {
+              core.summary.addHeading("Test Step Metadata", 2)
+              core.summary.addCodeBlock(JSON.stringify(prevStep, null, "  "), 'json')
+            }
+            
+            core.summary.write()
+        env:
+          'STEPS': ${{ toJSON(steps) }}
+          'MATRIX_JSON': ${{ matrix['json'] }}
