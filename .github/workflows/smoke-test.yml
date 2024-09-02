@@ -74,7 +74,7 @@ jobs:
           'STEPS':   ${{ toJSON(steps) }}
 
       - name: "Test Source Repo Equals Mirror Repo"
-        # id: 'test-source-equals-mirror'
+        id: 'test-source-equals-mirror'
         uses: './'
         with:
           'source-repo-url': 'https://git.launchpad.net/beautifulsoup'
