@@ -40,6 +40,8 @@ jobs:
         uses: 'actions/github-script@main'
         with:
           script: |
+            const assert = require('node:assert')
+
             const steps = JSON.parse(process.env['OUTPUTS'])
             const prevStepOutputs = steps[Object.keys(steps).pop()]
 
