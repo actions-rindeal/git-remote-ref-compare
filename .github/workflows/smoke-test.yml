@@ -54,8 +54,8 @@ jobs:
         id: 'test'
         uses: './'
         with:
-          'source-repo-url': ${{ fromJSON(matrix['json'])["sourceRepoUrl"] }}
-          'target-repo-url': ${{ fromJSON(matrix['json'])["targetRepoUrl"] }}
+          'source-repo-url': ${{ fromJSON(matrix['json'])['sourceRepoUrl'] }}
+          'target-repo-url': ${{ fromJSON(matrix['json'])['targetRepoUrl'] }}
 
       - name: >
           Assert ${{ fromJSON(matrix['json'])['testName'] }}
