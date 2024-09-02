@@ -32,21 +32,21 @@ jobs:
         'json':
           - |
             {
-              "testName": "Test source(github.repository), target(github.repository)",
+              "testName": "Test #1 - Same",
               "expectedRefsDiffer": false,
               "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
               "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
             }
           - |
             {
-              "testName": "Test Equality",
+              "testName": "Test #2 - Mirrored",
               "expectedRefsDiffer": false,
               "sourceRepoUrl": "https://git.launchpad.net/beautifulsoup",
               "targetRepoUrl": "https://github.com/facsimiles/beautifulsoup.git"
             }
           - |
             {
-              "testName": "Test Completely Different Repos",
+              "testName": "Test #3 - Completely Different",
               "expectedRefsDiffer": true,
               "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
               "targetRepoUrl": "https://github.com/rindeal-js/git-remote-ref-compare.git"
@@ -101,19 +101,3 @@ jobs:
         env:
           'STEPS': ${{ toJSON(steps) }}
           'MATRIX_JSON': ${{ matrix['json'] }}
-
-
-      # - name: Run local action with different URLs that should differ
-      #   id: test_different_repos
-      #   uses: ./
-      #   with:
-      #     source-repo-url: ${{ github.repository }}
-      #     target-repo-url: 'https://github.com/rindeal-js/git-remote-ref-compare.git'
-
-      # - name: Output results
-      #   run: |
-      #     echo "Current repo vs current repo: ${{ steps.test_current_repo.outputs.refs-differ }}"
-      #     echo "Equal repos: ${{ steps.test_equal_repos.outputs.refs-differ }}"
-      #     echo "Different repos: ${{ steps.test_different_repos.outputs.refs-differ }}"
-      #   env:
-      #     INPUT_REFS_DIFFER_OUTPUTS: ${{ toJSON(steps.test_current_repo.outputs) }}
