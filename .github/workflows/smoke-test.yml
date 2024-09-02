@@ -34,8 +34,8 @@ jobs:
             {
               "testName": "Test source(github.repository), target(github.repository)",
               "expectedRefsDiffer": false,
-              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}', github.repository)) }},
-              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}', github.repository)) }}
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
             }
 
     steps:
@@ -82,6 +82,7 @@ jobs:
             
             core.summary.write()
         env:
+          'STEPS': ${{ toJSON(steps) }}
           'MATRIX_JSON': ${{ matrix['json'] }}
 
       # - name: "Test Source Repo Equals Mirror Repo"
