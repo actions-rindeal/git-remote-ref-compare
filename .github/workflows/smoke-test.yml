@@ -36,16 +36,20 @@ jobs:
           source-repo-url: "${{ format('https://github.com/{0}', github.repository) }}"
           target-repo-url: "${{ format('https://github.com/{0}', github.repository) }}"
 
-      - name: "Assert"
+      - name: "Assert `refs(github.repository) === refs(github.repository)`"
         uses: 'actions/github-script@main'
         with:
           script: |
             const steps = JSON.parse(process.env['OUTPUTS'])
             const prevStepOutputs = steps[Object.keys(steps).pop()]
 
+            core.summary.codeblock(JSON.stringify({prevStepOutputs}, null, "  "), 'json')
+            
             console.log({refsDiffer: prevStepOutputs['refs-differ']})
             const refsDiffer = JSON.parse(prevStepOutputs['refs-differ'])
-            console.log({refsDiffer})
+            assert(typeof refsDiffer === 'boolean')
+            
+            core.summary.write()
         env:
           'OUTPUTS': ${{ toJSON(steps.*.outputs) }}
 
