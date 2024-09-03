@@ -6,6 +6,10 @@ description: >
   Keep your mirrors up-to-date and synchronized efficiently.
 author: "Jan Chren ~rindeal"
 
+branding:
+  icon: "git-merge"
+  color: "yellow"
+  
 inputs:
   'source-repo-url':
     description: "The URL of the source Git repository"
