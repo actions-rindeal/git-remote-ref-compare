@@ -9,24 +9,11 @@ on:
   pull_request:
   workflow_dispatch:
 
-# outputs:
-#   'refs-differ':
-#     description: "Boolean indicating if the repositories are different"
-#   'diff-message':
-#     description: "Optional message describing the differences"
-#   'diff-type':
-#     description: "Optional type of the difference"
-#   'source-repo-url':
-#     description: "URL of the source Git repository"
-#   'target-repo-url':
-#     description: "URL of the target Git repository"
-
 jobs:
   'smoke-test':
     runs-on: 'ubuntu-latest'
 
     strategy:
-      # max-parallel: 1
       fail-fast: false
       matrix:
         'json':
@@ -70,6 +57,46 @@ jobs:
               "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
               "targetRepoUrl": ""
             }
+          - |
+            {
+              "testName": "#6 - Invalid Source URL",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": "https://invalid-url",
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#7 - Invalid Target URL",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": "https://invalid-url"
+            }
+          - |
+            {
+              "testName": "#8 - Source URL with git protocol",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": ${{ toJSON(format('git://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#9 - Target URL with ssh protocol",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('ssh://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#10 - Non-existant URLs",
+              "expectedOutcome": "failure",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": "https://invalid-source-url",
+              "targetRepoUrl": "https://invalid-target-url"
+            }
 
     name: >
       Test ${{ fromJSON(matrix['json'])['testName'] }}
@@ -80,7 +107,7 @@ jobs:
         with:
           script: |
             const { matrixJson } = process.env
-            const matrix = JSON.parse(matrixJson)  // alse validates input
+            const matrix = JSON.parse(matrixJson)
 
             core.summary.addHeading(`${matrix["testName"]}`, 1)
             core.summary.write()
@@ -105,7 +132,6 @@ jobs:
             core.summary.write()
         env:
           'matrixJson': ${{ matrix.json }}
-
 
       - name: "Checkout current repository"
         uses: 'actions/checkout@main'
