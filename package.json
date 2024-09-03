@@ -17,7 +17,7 @@
     "build:min": "esbuild src/index.ts --platform=node --bundle --outfile=dist/index.min.js --minify --sourcemap"
   },
   "devDependencies": {
-    "@tsconfig/node20": "^1.0.0",
+    "@tsconfig/node20": "^20.1.4",
     "@types/node": "^22.5.2",
     "esbuild": "^0.23.1"
   },
