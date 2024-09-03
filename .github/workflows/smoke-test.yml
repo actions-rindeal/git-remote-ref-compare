@@ -32,7 +32,7 @@ jobs:
         'json':
           - |
             {
-              "testName": "Test #1 - Same",
+              "testName": "#1 - Same",
               "expectedOutcome": "success",
               "expectedRefsDiffer": false,
               "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
@@ -40,7 +40,7 @@ jobs:
             }
           - |
             {
-              "testName": "Test #2 - Mirrored",
+              "testName": "#2 - Mirrored",
               "expectedOutcome": "success",
               "expectedRefsDiffer": false,
               "sourceRepoUrl": "https://git.launchpad.net/beautifulsoup",
@@ -48,7 +48,7 @@ jobs:
             }
           - |
             {
-              "testName": "Test #3 - Completely Different",
+              "testName": "#3 - Completely Different",
               "expectedOutcome": "success",
               "expectedRefsDiffer": true,
               "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
@@ -56,7 +56,7 @@ jobs:
             }
           - |
             {
-              "testName": "Test #4 - Empty Source",
+              "testName": "#4 - Empty Source",
               "expectedOutcome": "failure",
               "expectedRefsDiffer": true,
               "sourceRepoUrl": "",
@@ -67,12 +67,37 @@ jobs:
       Test ${{ fromJSON(matrix['json'])['testName'] }}
 
     steps:
-      - name: "Dump Matrix JSON"
-        shell: bash -euo pipefail {0}
-        run: |
-          echo "${MATRIX_JSON}" | jq -c .
+      - name: "Initialize Summary"
+        uses: 'actions/github-script@main'
+        with:
+          script: |
+            const { matrixJson } = process.env
+            const matrix = JSON.parse(matrixJson)  // alse validates input
+
+            core.summary.addHeading(`${matrix["testName"]}`, 1)
+            core.summary.write()
         env:
-          'MATRIX_JSON': ${{ matrix['json'] }}
+          'matrixJson': ${{ matrix.json }}
+
+      - name: "Dump Matrix JSON"
+        uses: 'actions/github-script@main'
+        with:
+          script: |
+            const { execFileSync } = require('child_process')
+            const { matrixJson } = process.env
+            const matrix = JSON.parse(matrixJson)
+
+            execFileSync('jq', ['-c', '.'], {
+              input: matrixJson,
+              stdio: ['pipe', 'inherit', 'inherit'],
+            })
+
+            core.summary.addHeading("Matrix", 2)
+            core.summary.addCodeBlock(JSON.stringify(matrix, null, "  "), 'json')
+            core.summary.write()
+        env:
+          'matrixJson': ${{ matrix.json }}
+
 
       - name: "Checkout current repository"
         uses: 'actions/checkout@main'
@@ -98,13 +123,12 @@ jobs:
             console.log({prevStep})
             const matrix = JSON.parse(process.env['MATRIX_JSON'])
 
-            core.summary.addHeading(matrix["testName"], 2)
-            
             assert.strictEqual(prevStep.outcome, matrix["expectedOutcome"])
 
             if ( matrix["expectedOutcome"] === 'success' ) {
               const outputs = prevStep.outputs
 
+              core.summary.addHeading("Outputs", 2)
               core.summary.addCodeBlock(JSON.stringify(outputs, null, "  "), 'json')
 
               console.log({refsDiffer: outputs['refs-differ']})
