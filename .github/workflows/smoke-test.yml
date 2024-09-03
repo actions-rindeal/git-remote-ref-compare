@@ -229,6 +229,8 @@ jobs:
         with:
           'source-repo-url': ${{ fromJSON(matrix['json'])['sourceRepoUrl'] }}
           'target-repo-url': ${{ fromJSON(matrix['json'])['targetRepoUrl'] }}
+        env:
+          'RUNNER_DEBUG': '1'
 
       - name: >
           Assert ${{ fromJSON(matrix['json'])['testName'] }}
