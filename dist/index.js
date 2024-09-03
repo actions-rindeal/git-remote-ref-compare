@@ -18996,51 +18996,122 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
   }
 });
 
+// node_modules/@rindeal/git-remote-ref-compare/dist/logger.js
+var require_logger = __commonJS({
+  "node_modules/@rindeal/git-remote-ref-compare/dist/logger.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.Logger = void 0;
+    var Logger2 = class _Logger {
+      static logLevel = process.env["RUNNER_DEBUG"] === "1" ? "silly" : "fatal";
+      static log(level, message) {
+        if (_Logger.shouldLog(level)) {
+          const isString = typeof message === "string";
+          console.log(`${_Logger.getColor(level)}%s${_Logger.getColor("")}`, `${_Logger.getEmoji(level)} [${level.toUpperCase()}] ${isString ? message : ""}`, isString ? "" : message);
+        }
+      }
+      static silly(message) {
+        _Logger.log("silly", message);
+      }
+      static trace(message) {
+        _Logger.log("trace", message);
+      }
+      static debug(message) {
+        _Logger.log("debug", message);
+      }
+      static info(message) {
+        _Logger.log("info", message);
+      }
+      static warn(message) {
+        _Logger.log("warn", message);
+      }
+      static error(message) {
+        _Logger.log("error", message);
+      }
+      static fatal(message) {
+        _Logger.log("fatal", message);
+      }
+      static shouldLog(level) {
+        const levels = ["silly", "trace", "debug", "info", "warn", "error", "fatal"];
+        return levels.indexOf(level) >= levels.indexOf(_Logger.logLevel);
+      }
+      static getColor(level) {
+        switch (level) {
+          case "silly":
+            return "\x1B[35m";
+          // Magenta
+          case "trace":
+            return "\x1B[34m";
+          // Blue
+          case "debug":
+            return "\x1B[36m";
+          // Cyan
+          case "info":
+            return "\x1B[32m";
+          // Green
+          case "warn":
+            return "\x1B[33m";
+          // Yellow
+          case "error":
+            return "\x1B[31m";
+          // Red
+          case "fatal":
+            return "\x1B[41m";
+          // Red background
+          default:
+            return "\x1B[0m";
+        }
+      }
+      static getEmoji(level) {
+        switch (level) {
+          case "silly":
+            return "\u{1F92A}";
+          case "trace":
+            return "\u{1F50D}";
+          case "debug":
+            return "\u{1F41B}";
+          case "info":
+            return "\u2139\uFE0F ";
+          case "warn":
+            return "\u26A0\uFE0F ";
+          case "error":
+            return "\u274C";
+          case "fatal":
+            return "\u{1F480}";
+          default:
+            return "";
+        }
+      }
+    };
+    exports2.Logger = Logger2;
+  }
+});
+
 // node_modules/@rindeal/git-remote-ref-compare/dist/index.js
 var require_dist = __commonJS({
   "node_modules/@rindeal/git-remote-ref-compare/dist/index.js"(exports2, module2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.GitRepo = exports2.RefDiff = exports2.RefDiffTypes = exports2.Ref = void 0;
+    exports2.Logger = exports2.GitRepo = exports2.RefDiff = exports2.RefDiffTypes = void 0;
     var child_process_1 = require("child_process");
-    var Ref = class {
-      name;
-      hash;
-      constructor(name, hash) {
-        this.name = name;
-        this.hash = hash;
-      }
-    };
-    exports2.Ref = Ref;
-    var RefDiffTypes = class _RefDiffTypes {
+    var logger_1 = require_logger();
+    Object.defineProperty(exports2, "Logger", { enumerable: true, get: function() {
+      return logger_1.Logger;
+    } });
+    var RefDiffTypes = class _RefDiffTypes extends String {
       static refCountMismatch = new _RefDiffTypes("REF_COUNT_MISMATCH");
       static refNotFound = new _RefDiffTypes("REF_NOT_FOUND");
       static hashMismatch = new _RefDiffTypes("HASH_MISMATCH");
       static criticalError = new _RefDiffTypes("CRITICAL_ERROR");
-      name;
-      constructor(name) {
-        this.name = name;
-      }
-      toString() {
-        return this.name;
-      }
     };
     exports2.RefDiffTypes = RefDiffTypes;
     var RefDiff = class {
-      message;
-      type;
-      sourceRefs;
-      targetRefs;
-      sourceRef;
-      targetRef;
-      constructor(message, type, sourceRefs, targetRefs, sourceRef, targetRef) {
-        this.message = message;
-        this.type = type;
-        this.sourceRefs = sourceRefs;
-        this.targetRefs = targetRefs;
-        this.sourceRef = sourceRef;
-        this.targetRef = targetRef;
-      }
+      message = "";
+      type = "";
+      sourceRefs = [];
+      targetRefs = [];
+      sourceRef = null;
+      targetRef = null;
     };
     exports2.RefDiff = RefDiff;
     var GitRepo2 = class {
@@ -19050,33 +19121,48 @@ var require_dist = __commonJS({
       refHashIndex = null;
       constructor(repoUrl) {
         this.repoUrl = repoUrl;
+        logger_1.Logger.info(`GitRepo instance created for \`${repoUrl}\``);
       }
       async getRefs() {
         if (this._refs) {
+          logger_1.Logger.debug(`Returning cached refs for \`${this.repoUrl}\``);
           return this._refs;
         } else {
+          logger_1.Logger.debug(`Fetching refs for \`${this.repoUrl}\``);
           return await this.fetchRefs();
         }
       }
       async fetchRefs() {
+        logger_1.Logger.trace(`fetchRefs() called for \`${this.repoUrl}\``);
         const result = await new Promise((resolve, reject) => {
-          (0, child_process_1.execFile)("git", ["ls-remote", this.repoUrl], (error, stdout, stderr) => {
+          if (!this.repoUrl.startsWith("https://")) {
+            const errorMsg = `URL doesn't start with https://: \`${this.repoUrl}\``;
+            logger_1.Logger.error(errorMsg);
+            throw new Error(errorMsg);
+          }
+          (0, child_process_1.execFile)("git", ["ls-remote", this.repoUrl], {}, (error, stdout) => {
             if (error) {
+              logger_1.Logger.error(`Error fetching refs for \`${this.repoUrl}\`: \`${error.message}\``);
               reject(error);
             } else {
+              logger_1.Logger.info(`Successfully fetched refs for \`${this.repoUrl}\``);
               resolve(stdout);
             }
           });
         });
         const refs = result.split("\n").filter((line) => line).map((line) => {
           const [hash, name] = line.split("	");
-          return new Ref(name, hash);
+          logger_1.Logger.silly(`Parsed ref: \`${name}\` with hash: \`${hash}\``);
+          return { name, hash };
         });
         this._refs = refs;
+        logger_1.Logger.debug(`Fetched \`${refs.length}\` refs for \`${this.repoUrl}\``);
         return refs;
       }
       async _buildRefIndexes() {
+        logger_1.Logger.trace(`_buildRefIndexes() called for \`${this.repoUrl}\``);
         if (!this._refs) {
+          logger_1.Logger.debug(`No cached refs found, fetching refs for \`${this.repoUrl}\``);
           await this.fetchRefs();
         }
         this.refNameIndex = /* @__PURE__ */ new Map();
@@ -19084,56 +19170,96 @@ var require_dist = __commonJS({
         for (const ref of this._refs) {
           this.refNameIndex.set(ref.name, ref);
           this.refHashIndex.set(ref.hash, ref);
+          logger_1.Logger.silly(`Indexed ref: \`${ref.name}\` with hash: \`${ref.hash}\``);
         }
+        logger_1.Logger.info(`Built ref indexes for \`${this.repoUrl}\``);
       }
       async getRefByName(name) {
+        logger_1.Logger.trace(`getRefByName() called with name: \`${name}\``);
         if (!this.refNameIndex) {
+          logger_1.Logger.debug(`Ref name index not built, building now for \`${this.repoUrl}\``);
           await this._buildRefIndexes();
         }
-        return this.refNameIndex.get(name);
+        const ref = this.refNameIndex.get(name);
+        if (ref) {
+          logger_1.Logger.info(`Found ref by name: \`${name}\``);
+        } else {
+          logger_1.Logger.warn(`Ref not found by name: \`${name}\``);
+        }
+        return ref;
       }
       async getRefByHash(hash) {
+        logger_1.Logger.trace(`getRefByHash() called with hash: \`${hash}\``);
         if (!this.refHashIndex) {
+          logger_1.Logger.debug(`Ref hash index not built, building now for \`${this.repoUrl}\``);
           await this._buildRefIndexes();
         }
-        return this.refHashIndex.get(hash);
+        const ref = this.refHashIndex.get(hash);
+        if (ref) {
+          logger_1.Logger.info(`Found ref by hash: \`${hash}\``);
+        } else {
+          logger_1.Logger.warn(`Ref not found by hash: \`${hash}\``);
+        }
+        return ref;
       }
       async refsDiffer(targetRepo) {
+        logger_1.Logger.trace(`refsDiffer() called between \`${this.repoUrl}\` and \`${targetRepo.repoUrl}\``);
         const [sourceRefs, targetRefs] = await Promise.all([
           this.getRefs(),
           targetRepo.getRefs()
         ]);
+        const refDiff = new RefDiff();
+        refDiff.sourceRefs = sourceRefs;
+        refDiff.targetRefs = targetRefs;
         if (sourceRefs.length === 0 || targetRefs.length === 0) {
-          return new RefDiff(`Critical error: One or both repositories have zero refs.`, RefDiffTypes.criticalError, sourceRefs, targetRefs, null, null);
+          refDiff.message = `Critical error: One or both repositories have zero refs.`;
+          refDiff.type = RefDiffTypes.criticalError;
+          logger_1.Logger.fatal(refDiff.message);
+          return refDiff;
         }
         if (sourceRefs.length !== targetRefs.length) {
-          return new RefDiff(`Ref count mismatch: source repo has \`${sourceRefs.length}\` refs, target repo has \`${targetRefs.length}\` refs.`, RefDiffTypes.refCountMismatch, sourceRefs, targetRefs, null, null);
+          refDiff.message = `Ref count mismatch: source repo has \`${sourceRefs.length}\` refs, target repo has \`${targetRefs.length}\` refs.`;
+          refDiff.type = RefDiffTypes.refCountMismatch;
+          logger_1.Logger.warn(refDiff.message);
+          return refDiff;
         }
         for (const sourceRef of sourceRefs) {
           const targetRef = await targetRepo.getRefByName(sourceRef.name);
           if (!targetRef) {
-            return new RefDiff(`Ref not found: \`${sourceRef.name}\` is missing in the target repo.`, RefDiffTypes.refNotFound, sourceRefs, targetRefs, sourceRef, null);
+            refDiff.message = `Ref not found: \`${sourceRef.name}\` is missing in the target repo.`;
+            refDiff.type = RefDiffTypes.refNotFound;
+            refDiff.sourceRef = sourceRef;
+            logger_1.Logger.error(refDiff.message);
+            return refDiff;
           }
           if (sourceRef.hash !== targetRef.hash) {
-            return new RefDiff(`Hash mismatch for ref \`${sourceRef.name}\`: source repo has \`${sourceRef.hash}\`, target repo has \`${targetRef.hash}\`.`, RefDiffTypes.hashMismatch, sourceRefs, targetRefs, sourceRef, targetRef);
+            refDiff.message = `Hash mismatch for ref \`${sourceRef.name}\`: source repo has \`${sourceRef.hash}\`, target repo has \`${targetRef.hash}\`.`;
+            refDiff.type = RefDiffTypes.hashMismatch;
+            refDiff.sourceRef = sourceRef;
+            refDiff.targetRef = targetRef;
+            logger_1.Logger.error(refDiff.message);
+            return refDiff;
           }
         }
+        logger_1.Logger.info(`No differences found between \`${this.repoUrl}\` and \`${targetRepo.repoUrl}\``);
         return null;
       }
     };
     exports2.GitRepo = GitRepo2;
     if (require.main === module2) {
       (async () => {
+        logger_1.Logger.logLevel = "silly";
         const sourceRepo = new GitRepo2("https://git.launchpad.net/beautifulsoup");
         const targetRepo = new GitRepo2("https://github.com/facsimiles/beautifulsoup.git");
         const sourceRefs = await sourceRepo.getRefs();
-        console.log(sourceRefs.pop());
+        logger_1.Logger.debug(`Injected fault by removing ref: \`${sourceRefs.pop()?.name}\``);
         const diffResult = await sourceRepo.refsDiffer(targetRepo);
         if (diffResult) {
-          console.log("The repositories differ:");
-          console.log(diffResult);
+          logger_1.Logger.info("The repositories differ:");
+          logger_1.Logger.info(diffResult);
+          logger_1.Logger.info(diffResult.type.toString());
         } else {
-          console.log("The repositories are exact clones.");
+          logger_1.Logger.info("The repositories are exact clones.");
         }
       })();
     }
@@ -19144,31 +19270,53 @@ var require_dist = __commonJS({
 var core = __toESM(require_core());
 var import_git_remote_ref_compare = __toESM(require_dist());
 function isValidUrl(urlStr) {
+  import_git_remote_ref_compare.Logger.trace(`Entering isValidUrl with urlStr: \`${urlStr}\``);
   try {
     const url = new URL(urlStr);
-    if (url.protocol !== "https:") return false;
+    import_git_remote_ref_compare.Logger.debug(`Parsed URL: \`${url}\``);
+    if (url.protocol !== "https:") {
+      import_git_remote_ref_compare.Logger.warn(`URL protocol is not https: \`${url.protocol}\``);
+      return false;
+    }
   } catch (err) {
+    import_git_remote_ref_compare.Logger.error(`Error parsing URL: \`${urlStr}\``);
+    import_git_remote_ref_compare.Logger.error(err);
     return false;
   }
+  import_git_remote_ref_compare.Logger.info(`URL is valid: \`${urlStr}\``);
   return true;
 }
 async function run() {
+  import_git_remote_ref_compare.Logger.trace("Entering run function");
   const urlIoNames = ["source-repo-url", "target-repo-url"];
   const [sourceRepo, targetRepo] = urlIoNames.map((name) => {
+    import_git_remote_ref_compare.Logger.debug(`Processing input name: \`${name}\``);
     const url = core.getInput(name);
+    import_git_remote_ref_compare.Logger.info(`Retrieved URL for \`${name}\`: \`${url}\``);
     if (!isValidUrl(url)) {
+      import_git_remote_ref_compare.Logger.fatal(`Invalid URL provided for input \`${name}\`: \`${url}\``);
       throw new Error(`Invalid URL provided for input \`${name}\`: \`${url}\``);
     }
     core.setOutput(name, url);
+    import_git_remote_ref_compare.Logger.info(`Set output for \`${name}\`: \`${url}\``);
     return new import_git_remote_ref_compare.GitRepo(url);
   });
-  const diffResult = await sourceRepo.refsDiffer(targetRepo);
-  if (diffResult) {
-    core.setOutput("refs-differ", true);
-    core.setOutput("diff-message", diffResult.message);
-    core.setOutput("diff-type", diffResult.type.toString());
-  } else {
-    core.setOutput("refs-differ", false);
+  try {
+    const diffResult = await sourceRepo.refsDiffer(targetRepo);
+    import_git_remote_ref_compare.Logger.debug(`Diff result: \`${diffResult}\``);
+    if (diffResult) {
+      import_git_remote_ref_compare.Logger.info("Repositories differ");
+      core.setOutput("refs-differ", true);
+      core.setOutput("diff-message", diffResult.message);
+      core.setOutput("diff-type", diffResult.type.toString());
+    } else {
+      import_git_remote_ref_compare.Logger.info("Repositories do not differ");
+      core.setOutput("refs-differ", false);
+    }
+  } catch (err) {
+    import_git_remote_ref_compare.Logger.error("Error during refsDiffer operation");
+    import_git_remote_ref_compare.Logger.error(err);
+    throw err;
   }
 }
 run();
