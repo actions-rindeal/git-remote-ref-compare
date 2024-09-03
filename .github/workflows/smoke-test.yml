@@ -170,7 +170,7 @@ jobs:
             const { matrixJson } = process.env
             const matrix = JSON.parse(matrixJson)
 
-            execFileSync('jq', ['-c', '.'], {
+            execFileSync('jq', ['-C', '.'], {
               input: matrixJson,
               stdio: ['pipe', 'inherit', 'inherit'],
             })
