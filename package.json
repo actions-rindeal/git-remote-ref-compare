@@ -15,7 +15,10 @@
     "build": "npm run build:js && npm run build:min",
     "build:js": "esbuild src/index.ts --platform=node --bundle --outfile=dist/index.js --sourcemap",
     "build:min": "esbuild src/index.ts --platform=node --bundle --outfile=dist/index.min.js --minify --sourcemap",
-    "smoke-test": "env RUNNER_DEBUG=1 INPUT_SOURCE-REPO-URL=https://git.launchpad.net/beautifulsoup INPUT_TARGET-REPO-URL=https://github.com/facsimiles/beautifulsoup.git  node dist/index.js"
+    "test": "",
+    "smoke-test": "env RUNNER_DEBUG=1 INPUT_SOURCE-REPO-URL=https://git.launchpad.net/beautifulsoup INPUT_TARGET-REPO-URL=https://github.com/facsimiles/beautifulsoup.git  node dist/index.js",
+    "lint": "",
+    "lint:reuse": "pipx run --quiet -- reuse lint"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
