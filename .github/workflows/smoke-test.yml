@@ -33,6 +33,7 @@ jobs:
           - |
             {
               "testName": "Test #1 - Same",
+              "expectedOutcome": "success",
               "expectedRefsDiffer": false,
               "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
               "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
@@ -40,6 +41,7 @@ jobs:
           - |
             {
               "testName": "Test #2 - Mirrored",
+              "expectedOutcome": "success",
               "expectedRefsDiffer": false,
               "sourceRepoUrl": "https://git.launchpad.net/beautifulsoup",
               "targetRepoUrl": "https://github.com/facsimiles/beautifulsoup.git"
@@ -47,13 +49,7 @@ jobs:
           - |
             {
               "testName": "Test #3 - Completely Different",
-              "expectedRefsDiffer": true,
-              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
-              "targetRepoUrl": "https://github.com/rindeal-js/git-remote-ref-compare.git"
-            }
-          - |
-            {
-              "testName": "Test #3 - Completely Different",
+              "expectedOutcome": "success",
               "expectedRefsDiffer": true,
               "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
               "targetRepoUrl": "https://github.com/rindeal-js/git-remote-ref-compare.git"
@@ -61,6 +57,7 @@ jobs:
           - |
             {
               "testName": "Test #4 - Empty Source",
+              "expectedOutcome": "failure",
               "expectedRefsDiffer": true,
               "sourceRepoUrl": "",
               "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
@@ -83,6 +80,7 @@ jobs:
       - name: >
           Test ${{ fromJSON(matrix['json'])['testName'] }}
         id: 'test'
+        continue-on-error: true
         uses: './'
         with:
           'source-repo-url': ${{ fromJSON(matrix['json'])['sourceRepoUrl'] }}
@@ -96,20 +94,25 @@ jobs:
             const assert = require('node:assert/strict')
 
             const steps = JSON.parse(process.env['STEPS'])
-            const prevStepOutputs = steps[Object.keys(steps).pop()].outputs
+            const prevStep = steps[Object.keys(steps).pop()]
+            console.log({prevStep})
+            
+            const outputs = prevStep.outputs
+
+            assert.strictEqual(prevStep.outcome, matrix["expectedOutcome"])
 
             const matrix = JSON.parse(process.env['MATRIX_JSON'])
 
             core.summary.addHeading(matrix["testName"], 2)
-            core.summary.addCodeBlock(JSON.stringify(prevStepOutputs, null, "  "), 'json')
+            core.summary.addCodeBlock(JSON.stringify(outputs, null, "  "), 'json')
             
-            console.log({refsDiffer: prevStepOutputs['refs-differ']})
-            const refsDiffer = JSON.parse(prevStepOutputs['refs-differ'])
+            console.log({refsDiffer: outputs['refs-differ']})
+            const refsDiffer = JSON.parse(outputs['refs-differ'])
             assert.strictEqual(typeof refsDiffer, 'boolean')
             assert.strictEqual(refsDiffer, matrix["expectedRefsDiffer"])
 
-            assert.strictEqual(prevStepOutputs['source-repo-url'], matrix["sourceRepoUrl"])
-            assert.strictEqual(prevStepOutputs['target-repo-url'], matrix["targetRepoUrl"])
+            assert.strictEqual(outputs['source-repo-url'], matrix["sourceRepoUrl"])
+            assert.strictEqual(outputs['target-repo-url'], matrix["targetRepoUrl"])
             
             core.summary.write()
         env:
