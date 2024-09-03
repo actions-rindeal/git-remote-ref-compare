@@ -1,29 +1,34 @@
-name: "Check Remote Git Refs Equality"
+name: "Verify Remote Git Refs Equality"
 description: >
-  This GitHub Action is used in a repository mirror to verify if the references (refs) in remote Git repositories are equal.
-  It checks if a full clone-push cycle is necessary by comparing the specified branches or tags in the remote repositories.
-  This ensures that the mirror remains up-to-date and synchronized without unnecessary operations.
+  Enhance your repository mirroring process with this GitHub Action.
+  It ensures that the references (refs) in your remote Git repositories are identical,
+  preventing unnecessary clone-push cycles.
+  Keep your mirrors up-to-date and synchronized efficiently.
 author: "Jan Chren ~rindeal"
 
+branding:
+  icon: "git-merge"
+  color: "yellow"
+  
 inputs:
   'source-repo-url':
-    description: "URL of the source Git repository"
+    description: "The URL of the source Git repository"
     required: true
   'target-repo-url':
-    description: "URL of the target Git repository"
+    description: "The URL of the target Git repository"
     required: true
 
 outputs:
   'refs-differ':
-    description: "Boolean indicating if the repositories are different"
+    description: "Indicates if the repositories have different references (true/false)"
   'diff-message':
-    description: "Optional message describing the differences"
+    description: "Details the differences found between repositories (if any)"
   'diff-type':
-    description: "Optional type of the difference"
+    description: "Type ID categorizing the difference (if any)"
   'source-repo-url':
-    description: "URL of the source Git repository"
+    description: "URL of the source Git repository (same as input)"
   'target-repo-url':
-    description: "URL of the target Git repository"
+    description: "URL of the target Git repository (same as input)"
 
 runs:
   using: 'node20'
