@@ -116,7 +116,7 @@ jobs:
           - |
             {
               "testName": "#13 - Source URL with different case",
-              "expectedOutcome": "success",
+              "expectedOutcome": "failure",
               "expectedRefsDiffer": false,
               "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.GIT', github.repository)) }},
               "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
@@ -124,7 +124,7 @@ jobs:
           - |
             {
               "testName": "#14 - Target URL with different case",
-              "expectedOutcome": "success",
+              "expectedOutcome": "failure",
               "expectedRefsDiffer": false,
               "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
               "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.GIT', github.repository)) }}
