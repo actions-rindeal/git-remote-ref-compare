@@ -51,6 +51,20 @@ jobs:
               "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
               "targetRepoUrl": "https://github.com/rindeal-js/git-remote-ref-compare.git"
             }
+          - |
+            {
+              "testName": "Test #3 - Completely Different",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": "https://github.com/rindeal-js/git-remote-ref-compare.git"
+            }
+          - |
+            {
+              "testName": "Test #4 - Empty Source",
+              "expectedRefsDiffer": true,
+              "sourceRepoUrl": "",
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
 
     name: >
       Test ${{ fromJSON(matrix['json'])['testName'] }}
