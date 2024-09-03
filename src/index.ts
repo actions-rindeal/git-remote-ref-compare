@@ -1,3 +1,9 @@
+/**
+ * SPDX-FileCopyrightText: 2024 Jan Chren ~rindeal
+ *
+ * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
+ */
+
 import * as core from '@actions/core'
 import { GitRepo, Logger } from '@rindeal/git-remote-ref-compare'
 
