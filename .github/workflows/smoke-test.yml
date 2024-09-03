@@ -226,4 +226,32 @@ jobs:
           'target-repo-url': ${{ fromJSON(matrix['json'])['targetRepoUrl'] }}
 
       - name: >
-          Assert ${{ fromJSON(matrix['json'])['testName']
+          Assert ${{ fromJSON(matrix['json'])['testName'] }}
+        uses: 'actions/github-script@main'
+        with:
+          script: |
+            const assert = require('node:assert/strict')
+            const steps = JSON.parse(process.env['STEPS'])
+            const prevStep = steps[Object.keys(steps).pop()]
+            console.log({prevStep})
+            const matrix = JSON.parse(process.env['MATRIX_JSON'])
+            assert.strictEqual(prevStep.outcome, matrix["expectedOutcome"])
+            if ( matrix["expectedOutcome"] === 'success' ) {
+              const outputs = prevStep.outputs
+              core.summary.addHeading("Outputs", 2)
+              core.summary.addCodeBlock(JSON.stringify(outputs, null, "  "), 'json')
+              console.log({refsDiffer: outputs['refs-differ']})
+              const refsDiffer = JSON.parse(outputs['refs-differ'])
+              assert.strictEqual(typeof refsDiffer, 'boolean')
+              assert.strictEqual(refsDiffer, matrix["expectedRefsDiffer"])
+              assert.strictEqual(outputs['source-repo-url'], matrix["sourceRepoUrl"])
+              assert.strictEqual(outputs['target-repo-url'], matrix["targetRepoUrl"])
+            } else {
+              core.summary.addHeading("Test Step Metadata", 2)
+              core.summary.addCodeBlock(JSON.stringify(prevStep, null, "  "), 'json')
+            }
+            
+            core.summary.write()
+        env:
+          'STEPS': ${{ toJSON(steps) }}
+          'MATRIX_JSON': ${{ matrix['json'] }}
