@@ -1,7 +1,7 @@
 name: "Check Remote Git Refs Equality"
 description: >
   This GitHub Action is used in a repository mirror to verify if the references (refs) in remote Git repositories are equal.
-  It checks if a full clone-push cycle is necessary by comparing the specified branches or tags in the remote repositories.
+  It checks if a full clone-push cycle is necessary by comparing all refs in the two remote repositories.
   This ensures that the mirror remains up-to-date and synchronized without unnecessary operations.
 author: "Jan Chren ~rindeal"
 
