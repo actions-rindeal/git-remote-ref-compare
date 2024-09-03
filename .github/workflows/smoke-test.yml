@@ -96,12 +96,10 @@ jobs:
             const steps = JSON.parse(process.env['STEPS'])
             const prevStep = steps[Object.keys(steps).pop()]
             console.log({prevStep})
-            
             const outputs = prevStep.outputs
+            const matrix = JSON.parse(process.env['MATRIX_JSON'])
 
             assert.strictEqual(prevStep.outcome, matrix["expectedOutcome"])
-
-            const matrix = JSON.parse(process.env['MATRIX_JSON'])
 
             core.summary.addHeading(matrix["testName"], 2)
             core.summary.addCodeBlock(JSON.stringify(outputs, null, "  "), 'json')
