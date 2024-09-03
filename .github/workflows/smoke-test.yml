@@ -78,7 +78,7 @@ jobs:
               "testName": "#8 - Source URL with git protocol",
               "expectedOutcome": "failure",
               "expectedRefsDiffer": true,
-              "sourceRepoUrl": ${{ toJSON(format('git://github.com/{0}.git', github.repository)) }},
+              "sourceRepoUrl": ${{ toJSON(format('git://github.com/{0}.git',   github.repository)) }},
               "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
             }
           - |
@@ -87,7 +87,7 @@ jobs:
               "expectedOutcome": "failure",
               "expectedRefsDiffer": true,
               "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
-              "targetRepoUrl": ${{ toJSON(format('ssh://github.com/{0}.git', github.repository)) }}
+              "targetRepoUrl": ${{ toJSON(format('ssh://github.com/{0}.git',   github.repository)) }}
             }
           - |
             {
@@ -96,6 +96,54 @@ jobs:
               "expectedRefsDiffer": true,
               "sourceRepoUrl": "https://invalid-source-url",
               "targetRepoUrl": "https://invalid-target-url"
+            }
+          - |
+            {
+              "testName": "#11 - Source URL with trailing slash",
+              "expectedOutcome": "success",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git/', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git',  github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#12 - Target URL with trailing slash",
+              "expectedOutcome": "success",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git',  github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git/', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#13 - Source URL with different case",
+              "expectedOutcome": "success",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.GIT', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#14 - Target URL with different case",
+              "expectedOutcome": "success",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.GIT', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#15 - Source URL with no .git suffix",
+              "expectedOutcome": "success",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}',     github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }}
+            }
+          - |
+            {
+              "testName": "#16 - Target URL with no .git suffix",
+              "expectedOutcome": "success",
+              "expectedRefsDiffer": false,
+              "sourceRepoUrl": ${{ toJSON(format('https://github.com/{0}.git', github.repository)) }},
+              "targetRepoUrl": ${{ toJSON(format('https://github.com/{0}',     github.repository)) }}
             }
 
     name: >
