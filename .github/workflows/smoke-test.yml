@@ -139,6 +139,7 @@ jobs:
               assert.strictEqual(outputs['source-repo-url'], matrix["sourceRepoUrl"])
               assert.strictEqual(outputs['target-repo-url'], matrix["targetRepoUrl"])
             } else {
+              core.summary.addHeading("Test Step Metadata", 2)
               core.summary.addCodeBlock(JSON.stringify(prevStep, null, "  "), 'json')
             }
             
